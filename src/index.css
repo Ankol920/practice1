@@ -1,111 +1,326 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+/* ------------------------------------------------------------------
+   THEME
+   Tailwind v4 has no tailwind.config.js. Design tokens are CSS variables
+   declared in an @theme block, and each one automatically creates a
+   matching utility class:
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+     --color-moss-100  ->  bg-moss-100 / text-ink-900 / border-moss-400
+     --font-sans       ->  font-sans
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+   Declaring tokens here EXTENDS the built-in palette, it does not replace
+   it, so default utilities like text-slate-400 keep working if ever needed.
+   The components here use the ink/moss tokens instead. Replacing
+   everything would need `--color-*: initial;` — we don't want that.
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+   LIGHT cream/matcha nature theme. The greens are deliberately desaturated
+   (HSL saturation 9-37%, hue 85-96deg) so nothing reads as a vibrant green.
+   Every foreground/background pairing in this palette is verified against
+   WCAG AA; see the contrast note under each token where a value is not the
+   obvious choice.
+   ------------------------------------------------------------------ */
+@import "tailwindcss";
+
+@theme {
+  /* Surfaces, lightest wash to border. moss-100 is the page background,
+     moss-200 cards, moss-300 the hover/panel step, moss-400 borders. */
+  --color-moss-50: #f7f6ec;
+  --color-moss-100: #f2f0e4;
+  --color-moss-200: #e9e8d6;
+  --color-moss-300: #dfe0cb;
+  --color-moss-400: #c9ceae;
+
+  /* moss-600 fills buttons, moss-700 is the link/focus-ring role, moss-800
+     the link hover.
+
+     WHY 600 and 700 ARE SEPARATE ROLES, and why 600 is darker than the
+     "obvious" matcha: the true mid matcha (#6d8a45) gives only 3.74:1 with
+     a cream button label, failing the 4.5:1 requirement for small text.
+     #5a7539 is the darkest fill that still clears 4.97:1, so the label
+     colour stays a warm cream instead of turning black.
+
+     Links cannot reuse the 600 fill for the same reason at 4.31:1, so
+     small link text uses 700 (5.82:1 on the page). */
+  --color-moss-600: #5a7539;
+  --color-moss-700: #4a6430;
+  --color-moss-800: #3d5527;
+
+  /* Text. ink-900 for headings and body (13.55:1 on the page), ink-500 for
+     muted body copy (6.92:1). cream-50 is the label colour on a moss-600
+     fill, and is also the focus ring colour on filled buttons -- a moss-700
+     ring on a moss-600 fill is only 1.28:1, i.e. invisible. */
+  --color-ink-900: #20261b;
+  --color-ink-500: #4b5445;
+  --color-cream-50: #fbfaf3;
+
+  /* Status colours for the contact form. Both are tested on the card
+     surface, not just the page. */
+  --color-berry-700: #8c3a2e;
+  --color-bark-700: #3f6b2f;
+
+  /* Inter for everything. The system fonts after it are the fallback for
+     when the Google Font fails to load (e.g. no wifi during a demo). */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
+@layer base {
+  /* Makes the browser render native widgets (scrollbars, form controls,
+     autofill) in light mode to match the cream surfaces. The contact form
+     increment depends on this: without it the browser paints its own dark
+     form-control chrome inside a light page. */
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    color-scheme: light;
   }
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+  html {
+    /* Prevents sideways scrolling, per the "no horizontal scroll" rule.
+       Deliberately `clip` and NOT `hidden`: `hidden` turns the element into
+       a scroll container, which silently breaks `position: sticky` on any
+       descendant. `clip` clips the overflow without creating one, so the
+       sticky navbar added in a later increment will still work. */
+    overflow-x: clip;
+
+    /* Smooth in-page anchor jumps, and the same feel on route changes. */
+    scroll-behavior: smooth;
+  }
+
+  body {
+    /* @apply lets an @theme token be used inside plain CSS. */
+    @apply bg-moss-100 font-sans text-ink-500 antialiased;
+  }
+
+  /* One default for every heading keeps the hierarchy consistent without
+     repeating text-ink-900 across six files. A component can still override
+     it with its own class, e.g. text-moss-700. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-ink-900;
+  }
+
+  /* Long unbroken strings (URLs, email addresses) are the usual cause of
+     accidental horizontal scroll, so wrap them rather than clip the page. */
+  h1,
+  h2,
+  h3,
+  p,
+  a,
+  li {
+    overflow-wrap: break-word;
   }
 }
 
-body {
-  margin: 0;
-}
+@layer components {
+  /* The skip-to-content link, for WCAG 2.4.1 Bypass Blocks (Level A).
+     Without it, every page load makes a keyboard user tab through the navbar
+     again to reach the content they actually came for.
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
+     WHY THIS IS HAND-WRITTEN CSS AND NOT UTILITIES:
+     the usual recipe is `sr-only focus:not-sr-only focus:absolute`, but
+     `sr-only` is itself `position: absolute` and `not-sr-only` resets it to
+     `position: static`. Tailwind makes no promise about whether the
+     `absolute` or the `static` utility wins, and if `static` wins, the
+     focused link re-enters the flex column in Layout.jsx and shoves the whole
+     page down. Declaring the focused state here makes the outcome certain.
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
+     Every property sr-only sets has to be undone by hand here, which is why
+     this block is longer than it looks. `:focus` rather than `:focus-visible`
+     because the link is activated by Enter as well as pointed at, and both
+     deserve to see it. */
+  .skip-link {
+    @apply sr-only;
+  }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+  .skip-link:focus {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    /* Above the navbar's z-50, so the sticky bar cannot cover it. */
+    z-index: 100;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+    border-radius: 0.375rem;
+    background-color: var(--color-moss-600);
+    color: var(--color-cream-50);
+    font-weight: 600;
   }
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+
+/* Motion here is decorative: card lifts, colour transitions, and the smooth
+   scroll that the skip link triggers. All of it is suppressed on request.
+
+   Unlayered on purpose. Tailwind's utilities live in the `utilities` cascade
+   layer, and an unlayered rule outranks every layered one regardless of
+   specificity, so this needs no !important to beat transition utilities --
+   but the transition-duration override does need it, because a transition
+   shorthand set elsewhere in the same rule would otherwise re-declare it. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
-p {
-  margin: 0;
+
+/* ------------------------------------------------------------------
+   ORGANIC TEXTURE
+
+   Large areas of flat cream read as dead paper. These two layers add
+   depth without a single image request.
+
+   The grain is an inline SVG fractal-noise filter used as a data URI on a
+   background-image. data: URIs need no asset file, so there is no extra
+   network request and nothing to lazy-load. 3% opacity keeps it below the
+   threshold where it becomes visible as noise rather than as paper.
+
+   The washes are two large radial gradients in moss-300, tinted further
+   with a `transparent` end stop so they fade out rather than banding.
+
+   `pointer-events: none` is essential on the grain: it covers the whole
+   viewport, so without this it would swallow every click on the page.
+
+   `position: fixed` pins it to the viewport so the texture does not scroll
+   with content and reveal the page background underneath.
+
+   Both are inside @layer utilities rather than being inline classes because
+   the values are long and this keeps the component markup readable. They are
+   decorative and expose nothing to assistive technology.
+
+   Respecting reduced motion: neither layer animates, and neither is
+   transformed, so nothing here needs the motion guard above.
+   ------------------------------------------------------------------ */
+@layer utilities {
+  .texture-grain::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .texture-wash::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: radial-gradient(
+        ellipse 60% 45% at 12% 8%,
+        color-mix(in srgb, var(--color-moss-300) 70%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 50% 40% at 88% 92%,
+        color-mix(in srgb, var(--color-moss-400) 45%, transparent),
+        transparent 70%
+      );
+  }
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
+/* Cards sit on moss-200 and are separated from the cream page by a moss-400
+   border rather than by a shadow alone. On a light surface a soft shadow
+   barely reads, so the border is doing the structural work and the shadow
+   is only a lift cue on hover. The shadow colour is a green-tinted dark
+   rather than neutral black, because a neutral black shadow over cream
+   reads as a grey smudge.
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+   `will-change` is deliberately NOT set: it is a promise to the compositor
+   that costs memory, and these cards are few and small. The transition on
+   `transform` alone is enough to keep the hover smooth. */
+@layer components {
+  .surface-card {
+    @apply rounded-xl border border-moss-400 bg-moss-200 shadow-sm;
+    transition:
+      transform 200ms ease,
+      box-shadow 200ms ease,
+      background-color 200ms ease,
+      border-color 200ms ease;
+  }
+
+  /* The interactive lift. -translate-y-1 plus a deeper, still-green shadow.
+     Disabled under reduced motion by the block above, since transform is
+     transitioned here. */
+  .surface-card-interactive:hover {
+    @apply -translate-y-1 border-moss-600;
+    box-shadow: 0 12px 24px -8px
+      color-mix(in srgb, var(--color-moss-800) 28%, transparent);
+  }
+
+  /* A soft moss-300 field for an alternating section band. It is a
+     background step, not a text surface, so it never carries body copy at the
+     ink-500 contrast without being checked (it is 5.90:1, which passes). */
+  .band-moss {
+    @apply rounded-2xl border border-moss-400 bg-moss-50;
+  }
+
+  /* ----------------------------------------------------------------
+     SKILL CARDS
+
+     Each card is a three-part composition rather than a centred badge: a
+     glyph tile, the name, and a line of real description. The blurb is what
+     makes these cards carry information instead of just repeating their own
+     heading, and it is the reason the layout can afford a left-aligned design.
+
+     The glyph tile uses moss-50 on the moss-200 card, the same inset step the
+     contact form uses for its fields. moss-600 glyphs on moss-50 is 4.34:1,
+     comfortably past the 3:1 that WCAG 1.4.11 asks of a graphical object.
+     ---------------------------------------------------------------- */
+  /* Note: this does NOT @apply surface-card. `@apply` accepts Tailwind
+     utilities, not another class defined in this same @layer, so the base
+     surface is composed in the markup instead: className="surface-card
+     skill-card". That keeps the border/fill/shadow definition in exactly one
+     place, which is the point of having surface-card at all. */
+  .skill-card {
+    @apply relative flex h-full gap-4 overflow-hidden p-5;
+  }
+
+  /* The tile behind the glyph. Sits above the card's own background, which is
+     why it needs a z-index even though nothing overlaps it in the DOM. */
+  .skill-glyph-tile {
+    @apply relative z-10 flex h-11 w-11 shrink-0 items-center justify-center
+      rounded-xl border border-moss-400 bg-moss-50 text-moss-600;
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease,
+      color 200ms ease;
+  }
+
+  /* Hover state for the whole card. It moves the tile and the rule but never
+     lifts the card, because these are not links and a lift would promise an
+     interaction that does not exist. `transform` is transitioned on the tile
+     alone, so the reduced-motion block suppresses exactly the movement and
+     leaves the colour change, which carries no motion dependency. */
+  .skill-card:hover .skill-glyph-tile {
+    @apply -translate-y-0.5 border-moss-600 bg-moss-300 text-moss-700;
+  }
+
+  /* A rule that grows out from under the skill name on hover. `transform:
+     scaleX` rather than `width` so it costs no layout, and it starts at
+     scaleX(0) with transform-origin left so it grows to the right. */
+  .skill-rule {
+    @apply mt-3 block h-0.5 w-full origin-left scale-x-0 rounded-full
+      bg-moss-600;
+    transition: transform 250ms ease;
+  }
+
+  .skill-card:hover .skill-rule {
+    @apply scale-x-100;
+  }
+}
 }
