@@ -278,7 +278,11 @@
      heading, and it is the reason the layout can afford a left-aligned design.
 
      The glyph tile uses moss-50 on the moss-200 card, the same inset step the
+<<<<<<< HEAD
      contact form uses for its fields. moss-600 glyphs on moss-50 is 4.34:1,
+=======
+     contact form uses for its fields. moss-600 glyphs on moss-50 is 4.79:1,
+>>>>>>> 31be1fd (working version v1)
      comfortably past the 3:1 that WCAG 1.4.11 asks of a graphical object.
      ---------------------------------------------------------------- */
   /* Note: this does NOT @apply surface-card. `@apply` accepts Tailwind
@@ -322,5 +326,8 @@
   .skill-card:hover .skill-rule {
     @apply scale-x-100;
   }
+<<<<<<< HEAD
 }
+=======
+>>>>>>> 31be1fd (working version v1)
 }

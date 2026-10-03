@@ -2,7 +2,11 @@ import { Link } from 'react-router'
 import StyledButton from './StyledButton.jsx'
 import profilePhoto from '../assets/profile.jpg'
 import { fullName, intro, bio } from '../data/profile.js'
+<<<<<<< HEAD
 import { allSkills } from '../data/skills.js'
+=======
+import { featuredSkills } from '../data/skills.js'
+>>>>>>> 31be1fd (working version v1)
 import { textLinkClass } from '../lib/styles.js'
 
 // Home is the "/" route: a hero with the name, a one-line introduction and
@@ -114,11 +118,20 @@ export default function Home() {
         </div>
 
         {/* Pills rather than cards here: this is a preview, so it stays one
+<<<<<<< HEAD
             compact row instead of adding seven full cards to the home page.
             Same moss-400 border and moss-100 fill as the /skills badges, so it
             still reads as the same system. */}
         <ul role="list" className="flex flex-wrap gap-2">
           {allSkills.map((skill) => (
+=======
+            compact row instead of adding eighteen full cards to the home page.
+            featuredSkills is a curated six, not a slice of allSkills -- the
+            /skills page now carries the full set. Same moss-400 border and
+            moss-100 fill as the /skills cards, so it reads as one system. */}
+        <ul role="list" className="flex flex-wrap gap-2">
+          {featuredSkills.map((skill) => (
+>>>>>>> 31be1fd (working version v1)
             <li
               key={skill.id}
               className="rounded-full border border-moss-400 bg-moss-100 px-3 py-1 text-sm text-ink-500 transition-colors duration-200 hover:border-moss-600 hover:text-ink-900"
